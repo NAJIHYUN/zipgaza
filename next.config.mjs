@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  images: {
-    unoptimized: true,
-  },
-}
+const repo = 'zipgaza'; // 예: 'kkumscore'
 
-export default nextConfig
+const nextConfig = {
+  output: 'export',
+  images: { unoptimized: true }, // next/image 쓰면 필요
+  basePath: process.env.GITHUB_ACTIONS ? `/${repo}` : '',
+  assetPrefix: process.env.GITHUB_ACTIONS ? `/${repo}/` : '',
+};
+
+export default nextConfig;
