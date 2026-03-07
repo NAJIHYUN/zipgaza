@@ -33,6 +33,13 @@
       font-display: swap;
     }
 
+    @font-face {
+      font-family: 'D2Coding';
+      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_three@1.0/D2Coding.woff') format('woff');
+      font-weight: normal;
+      font-display: swap;
+    }
+
     :root {
       --bg: #f3f4f6;
       --card: #ffffff;
@@ -159,7 +166,7 @@
       border-radius: 24px;
       box-shadow: var(--shadow);
       padding: 30px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .progress-top {
@@ -201,9 +208,9 @@
 
     .metric-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 16px;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
     }
 
     .metric-card {
@@ -236,11 +243,6 @@
       font-size: 16px;
       font-weight: 700;
       letter-spacing: -0.02em;
-    }
-
-    .metric-sub {
-      font-size: 12px;
-      color: #6b7280;
     }
 
     .section-title {
@@ -332,24 +334,10 @@
       letter-spacing: -0.02em;
     }
 
-    .arrow-group { display: flex; gap: 8px; }
-
-    .arrow-btn {
-      width: 44px;
-      height: 44px;
-      border: none;
-      border-radius: 12px;
-      background: transparent;
-      color: #111827;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-    }
-
-    .arrow-btn:hover { background: #e5e7eb; }
-
     .week-tabs {
-      display: inline-flex;
+      display: flex;
+      width: 100%;
+      align-items: center;
       border: 1px solid var(--line);
       border-radius: 14px;
       background: #e5e7eb;
@@ -374,6 +362,22 @@
       box-shadow: var(--shadow);
     }
 
+    .week-paste-btn {
+      margin-left: auto;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #111827;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .week-range {
       font-size: 16px;
       font-weight: 700;
@@ -390,9 +394,9 @@
     }
 
     table {
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
       border-collapse: collapse;
-      min-width: 1024px;
     }
 
     th {
@@ -400,43 +404,75 @@
       color: #111827;
       font-size: 12px;
       font-weight: 600;
-      text-align: left;
+      text-align: center;
+      vertical-align: middle;
       padding: 14px 12px;
       border-bottom: 1px solid var(--line);
+      white-space: nowrap;
     }
 
     td {
-      padding: 12px;
+      padding: 10px;
       border-top: 1px solid var(--line);
       font-size: 12px;
       color: #111827;
+      text-align: center;
       vertical-align: middle;
+      white-space: nowrap;
     }
 
-    .col-worked { text-align: right; }
+    .col-worked { text-align: center; }
 
     .day-weekend { color: #ef4444; font-weight: 600; }
 
     .time-input, .break-input, .leave-select {
-      width: 100%;
-      max-width: 190px;
-      border-radius: 14px;
+      border-radius: 8px;
       border: 1px solid #d1d5db;
       background: #fff;
-      padding: 12px;
+      padding: 4px 8px;
       font-size: 12px;
       color: #374151;
       box-shadow: var(--shadow);
     }
 
+    .time-input,
+    .leave-select {
+      width: auto;
+      display: block;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .time-input {
+      width: 10ch;
+      min-width: 8ch;
+    }
+    .leave-select {
+      min-width: 12ch;
+      padding-right: 30px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 9.6px 6.4px;
+    }
+
     .time-input, .break-input {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-family: 'D2Coding', monospace;
     }
 
     .break-input {
-      max-width: 90px;
+      width: 8ch;
+      min-width: 8ch;
       text-align: center;
-      padding: 0;
+      padding: 4px 8px;
+    }
+
+    ::placeholder {
+      color: #76797f;
+      opacity: 1;
     }
 
     input[type="text"]:focus,
@@ -457,20 +493,20 @@
     .breakdown-panel { padding-bottom: 20px; }
 
     .breakdown-plot {
+      position: relative;
       margin-top: 12px;
-      border-radius: 14px;
-      padding: 20px 2px 10px;
+      border-radius: 8px;
+      padding: 14px 2px 10px;
     }
 
     .breakdown-dashed {
-      border-top: 1px dashed #d1d5db;
-      margin-bottom: 46px;
+      display: none;
     }
 
     .breakdown-week {
       display: grid;
       grid-template-columns: repeat(14, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
       align-items: end;
     }
 
@@ -482,13 +518,38 @@
       font-size: 12px;
     }
 
-    .breakdown-bar {
+    .breakdown-track {
+      position: relative;
       width: 100%;
-      max-width: 62px;
-      height: 3px;
-      border-radius: 999px;
-      background: #e5e7eb;
+      max-width: 46px;
+      height: 120px;
+      border-radius: 8px;
+      background: transparent;
+      padding: 2px;
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .breakdown-stack {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column-reverse;
+    }
+
+    .breakdown-seg {
+      width: 100%;
       display: block;
+    }
+
+    .breakdown-seg.normal { background: #1976d2; }
+    .breakdown-seg.overtime { background: #f59e0b; }
+    .breakdown-seg.requested { background: #facc15; }
+
+    .breakdown-day.is-weekend {
+      color: #9ca3af;
+      opacity: 0.75;
     }
 
     .breakdown-legend {
@@ -516,23 +577,16 @@
 
     .legend-dot.normal { background: #1976d2; }
     .legend-dot.overtime { background: #f5a524; }
+    .legend-dot.requested { background: #facc15; }
 
-    .legend-line {
-      width: 16px;
-      height: 0;
-      border-top: 1px dashed #9ca3af;
-      display: inline-block;
-    }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 840px) {
       .brand h1 { font-size: 15px; }
       .brand p { font-size: 12px; }
       .btn, .btn-plain { font-size: 13px; }
       .progress-top { font-size: 13px; }
       .progress-foot { font-size: 11px; }
       .metric-head { font-size: 12px; }
-      .metric-value { font-size: 28px; }
-      .metric-sub { font-size: 11px; }
       .section-title { font-size: 20px; }
       .estimator-row { font-size: 14px; }
       .time-chip { font-size: 16px; height: 46px; width: 102px; }
@@ -547,9 +601,24 @@
       .time-input, .break-input, .leave-select { font-size: 12px; height: 46px; }
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1200px) {
       .top-inner,
       .app-shell { padding: 14px; }
+      .metric-grid { grid-template-columns: 1fr 1fr 1fr 1fr; }
+      .top-inner {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px;
+      }
+      .header-actions {
+        margin-left: auto;
+        justify-content: flex-end !important;
+        width: auto;
+        margin-top: 0 !important;
+      }
       .metric-grid { grid-template-columns: 1fr 1fr; }
       .panel,
       .metric-card { padding: 18px; border-radius: 18px; }
@@ -558,9 +627,21 @@
     }
 
     @media (max-width: 640px) {
-      .top-inner { flex-direction: column; align-items: stretch; }
-      .header-actions { justify-content: flex-end; }
-      .metric-grid { grid-template-columns: 1fr; }
+      .top-inner {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px;
+      }
+      .header-actions {
+        margin-left: auto;
+        justify-content: flex-end !important;
+        width: auto;
+        margin-top: 0 !important;
+      }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
       .entries-head { align-items: flex-start; }
       .week-tabs { width: 100%; }
       .week-tab { flex: 1; }
