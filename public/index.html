@@ -5,132 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Work Flex - 근무시간 계산기</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: { DEFAULT: '#4f46e5', light: '#6366f1', dark: '#4338ca' },
-            accent: '#10b981',
-            success: '#22c55e',
-            warning: '#f59e0b',
-            surface: '#f8fafc',
-            card: '#ffffff',
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    input[type="text"]:focus { outline: none; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3); }
-    .tab-active { background: #4f46e5; color: white; }
-    .tab-inactive { background: #e2e8f0; color: #64748b; }
-    .progress-bar { transition: width 0.3s ease; }
-  </style>
+  <link rel="stylesheet" href="./style.css">
 </head>
-<body class="bg-surface min-h-screen">
-  <div class="max-w-4xl mx-auto p-4 md:p-6">
-    <!-- Header -->
-    <header class="mb-6">
-      <div class="flex items-center justify-between">
+<body>
+  <header class="top-header">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 7v5l3 3"></path>
+          </svg>
+        </div>
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Work Flex</h1>
-          <p class="text-sm text-gray-500">2주 단위 자율출퇴근 근무시간 계산기</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="navigateWeek('prev')" class="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-          </button>
-          <span id="periodLabel" class="text-sm font-medium text-gray-700 min-w-[140px] text-center"></span>
-          <button onclick="navigateWeek('next')" class="p-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </button>
+          <h1>Work Flex</h1>
+          <p>Biweekly Hour Calculator</p>
         </div>
       </div>
-    </header>
-
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-      <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-        <p class="text-xs text-gray-500 mb-1">근무 시간</p>
-        <p id="workedHours" class="text-2xl font-bold text-gray-900">0h 0m</p>
-      </div>
-      <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-        <p class="text-xs text-gray-500 mb-1">남은 시간</p>
-        <p id="remainingHours" class="text-2xl font-bold text-primary">80h 0m</p>
-      </div>
-      <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-        <p class="text-xs text-gray-500 mb-1">금요일 퇴근</p>
-        <p id="fridayLeave" class="text-2xl font-bold text-accent">--:--</p>
-      </div>
-      <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
-        <p class="text-xs text-gray-500 mb-1">초과/부족</p>
-        <p id="overtime" class="text-2xl font-bold text-gray-900">0h 0m</p>
-      </div>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm mb-6">
-      <div class="flex justify-between text-sm mb-2">
-        <span class="text-gray-600">진행률</span>
-        <span id="progressLabel" class="font-medium text-gray-900">0%</span>
-      </div>
-      <div class="h-3 bg-gray-100 rounded-full overflow-hidden">
-        <div id="progressBar" class="progress-bar h-full bg-primary rounded-full" style="width: 0%"></div>
-      </div>
-      <div class="flex justify-between text-xs text-gray-400 mt-1">
-        <span>0h</span>
-        <span id="targetHours">80h</span>
-      </div>
-    </div>
-
-    <!-- Friday Estimator -->
-    <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm mb-6">
-      <h3 class="font-semibold text-gray-900 mb-3">금요일 퇴근 시간 계산</h3>
-      <div class="flex flex-wrap items-center gap-4 mb-4">
-        <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-600">기본 퇴근 시간</label>
-          <input type="text" id="defaultLeaveTime" value="17:00" class="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm font-mono" onchange="updateDefaultLeaveTime(this.value)">
-        </div>
-        <div id="fridayClockInSection" class="flex items-center gap-2 hidden">
-          <label class="text-sm text-gray-600">금요일 출근</label>
-          <input type="text" id="fridayClockIn" placeholder="09:00" class="w-20 px-2 py-1 text-center border border-primary/30 bg-primary/5 rounded-lg text-sm font-mono" onchange="updateFridayClockIn(this.value)">
-        </div>
-      </div>
-      <div id="fridayEstimation" class="p-3 bg-accent/10 rounded-lg">
-        <p class="text-sm text-gray-600" id="fridayMessage">금요일 출근 시간을 입력하세요</p>
-      </div>
-    </div>
-
-    <!-- Tabs and Table -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-      <div class="flex border-b border-gray-100">
-        <button id="tab1" onclick="switchTab(0)" class="flex-1 py-3 text-sm font-medium tab-active">1주차</button>
-        <button id="tab2" onclick="switchTab(1)" class="flex-1 py-3 text-sm font-medium tab-inactive">2주차</button>
-        <button onclick="openPasteDialog()" class="px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5 border-l border-gray-100">
-          HR 데이터 붙여넣기
+      <div class="header-actions">
+        <button class="btn" onclick="openPasteDialog()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 14l6-6"></path>
+            <path d="M9 9h.01"></path>
+            <path d="M15 15h.01"></path>
+            <path d="M21 12.5V17a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h4.5"></path>
+          </svg>
+          Paste HR Data
+        </button>
+        <button class="btn-plain" onclick="resetAll()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 3-6.708"></path>
+            <path d="M3 3v4h4"></path>
+          </svg>
+          Reset
         </button>
       </div>
-      
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50">
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="panel">
+      <div class="progress-top">
+        <span>Biweekly Progress</span>
+        <span id="progressLabel" class="progress-value">0.0%</span>
+      </div>
+      <div class="progress-track">
+        <div id="progressBar" class="progress-bar"></div>
+      </div>
+      <div class="progress-foot">
+        <span id="workedSub">0h 0m worked</span>
+        <span id="targetHours">80h 0m required</span>
+      </div>
+    </section>
+
+    <section class="metric-grid">
+      <article class="metric-card">
+        <div class="metric-head">
+          <span class="metric-icon" style="background: var(--blue-soft); color: var(--blue);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 7v5l3 2"></path>
+            </svg>
+          </span>
+          <span>Worked</span>
+        </div>
+        <p id="workedHours" class="metric-value">0h 0m</p>
+        <p id="workedHoursSub" class="metric-sub">0.0h total</p>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-head">
+          <span class="metric-icon" style="background: var(--green-soft); color: var(--green);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="8"></circle>
+              <path d="M12 12V8"></path>
+            </svg>
+          </span>
+          <span>Remaining</span>
+        </div>
+        <p id="remainingHours" class="metric-value">80h 0m</p>
+        <p id="remainingHoursSub" class="metric-sub">80.0h to go</p>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-head">
+          <span class="metric-icon" style="background: #dcfce7; color: #22c55e;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14"></path>
+              <path d="M13 5l7 7-7 7"></path>
+            </svg>
+          </span>
+          <span>Friday Leave</span>
+        </div>
+        <p id="fridayLeave" class="metric-value">-</p>
+        <p class="metric-sub">Enter Friday clock-in</p>
+      </article>
+
+      <article class="metric-card">
+        <div class="metric-head">
+          <span class="metric-icon" style="background: var(--orange-soft); color: var(--orange);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 16l6-6 4 4 6-6"></path>
+            </svg>
+          </span>
+          <span>Overtime</span>
+        </div>
+        <p id="overtime" class="metric-value">0h 0m</p>
+        <p id="overtimeSub" class="metric-sub">No overtime yet</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="entries-head">
+        <h2 class="entries-title">Time Entries</h2>
+        <div class="arrow-group">
+          <button class="arrow-btn" onclick="navigateWeek('prev')" aria-label="Previous period">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg>
+          </button>
+          <button class="arrow-btn" onclick="navigateWeek('next')" aria-label="Next period">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="week-tabs">
+        <button id="tab1" class="week-tab active" onclick="switchTab(0)">Week 1</button>
+        <button id="tab2" class="week-tab" onclick="switchTab(1)">Week 2</button>
+      </div>
+
+      <div class="table-wrap">
+        <h3 id="weekTableTitle" class="week-range">Week 1</h3>
+        <table class="timesheet-table">
+          <thead>
             <tr>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">날짜</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">출근</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">퇴근</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">휴가</th>
-              <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">휴게</th>
-              <th class="px-3 py-2 text-right text-xs font-medium text-gray-500">근무</th>
+              <th>요일</th>
+              <th>출근시간</th>
+              <th>퇴근시간</th>
+              <th>근태항목</th>
+              <th>조식</th>
+              <th>석식</th>
+              <th>비업무시간<br>(시스템+개인)</th>
+              <th>휴일</th>
+              <th>근무시간</th>
+              <th>OT시간</th>
+              <th>OT신청시간</th>
             </tr>
           </thead>
           <tbody id="timeTableBody"></tbody>
         </table>
       </div>
-    </div>
+    </section>
 
-    <!-- Paste Dialog -->
+    <section class="panel breakdown-panel">
+      <h2 class="entries-title">Daily Breakdown</h2>
+      <div class="breakdown-plot">
+        <div class="breakdown-dashed"></div>
+        <div class="breakdown-week">
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>월</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>화</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>수</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>목</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>금</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>토</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>일</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>월</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>화</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>수</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>목</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>금</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>토</span></div>
+          <div class="breakdown-day"><span class="breakdown-bar"></span><span>일</span></div>
+        </div>
+      </div>
+      <div class="breakdown-legend">
+        <span class="legend-item"><i class="legend-dot normal"></i>Normal</span>
+        <span class="legend-item"><i class="legend-dot overtime"></i>Overtime</span>
+        <span class="legend-item"><i class="legend-line"></i>8h line</span>
+      </div>
+    </section>
+
     <div id="pasteDialog" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" onclick="closePasteDialog(event)">
       <div class="bg-white rounded-xl p-6 w-full max-w-lg mx-4 max-h-[80vh] overflow-auto" onclick="event.stopPropagation()">
         <div class="flex items-center justify-between mb-4">
@@ -147,20 +200,25 @@
         </div>
         <div class="flex gap-2 mt-4">
           <button onclick="closePasteDialog()" class="flex-1 py-2 px-4 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">취소</button>
-          <button onclick="applyPasteData()" class="flex-1 py-2 px-4 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark">적용</button>
+          <button onclick="applyPasteData()" class="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">적용</button>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
-    // State
     let weeks = []
     let currentTab = 0
     let defaultLeaveTime = '17:00'
     let periodOffset = 0
+    const SAMPLE_WEEK_DATA = [
+      { clockIn: '07:46:21', clockOut: '17:32:12', breakMinutes: 10, leaveType: 'none', otRequestMinutes: 120 },
+      { clockIn: '07:28:30', clockOut: '18:26:53', breakMinutes: 30, leaveType: 'none', otRequestMinutes: 80 },
+      { clockIn: '07:28:46', clockOut: '18:59:16', breakMinutes: 30, leaveType: 'none', otRequestMinutes: 60 },
+      { clockIn: '08:14:40', clockOut: '18:28:54', breakMinutes: 10, leaveType: 'none', otRequestMinutes: 60 },
+      { clockIn: '07:22:23', clockOut: '13:11:48', breakMinutes: 0, leaveType: 'quarter', otRequestMinutes: 0 },
+    ]
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       loadFromStorage()
       if (weeks.length === 0) {
@@ -169,7 +227,6 @@
       render()
     })
 
-    // Date utilities
     function formatDate(date) {
       const y = date.getFullYear()
       const m = String(date.getMonth() + 1).padStart(2, '0')
@@ -209,51 +266,92 @@
       return `${sign}${h}h ${m}m`
     }
 
-    // Get biweekly period start (assuming periods start on specific Mondays)
+    function formatMinutesKo(mins) {
+      const h = Math.floor(Math.abs(mins) / 60)
+      const m = Math.abs(mins) % 60
+      return `${h}시간 ${m}분`
+    }
+
+    function formatBreakMinutes(mins) {
+      const safe = Math.max(0, parseInt(mins, 10) || 0)
+      const h = Math.floor(safe / 60)
+      const m = safe % 60
+      return `${h}:${String(m).padStart(2, '0')}`
+    }
+
+    function parseBreakInput(value) {
+      const raw = String(value || '').trim()
+      if (!raw) return 0
+      if (raw.includes(':')) {
+        const [h, m] = raw.split(':').map((part) => parseInt(part, 10))
+        if (!isNaN(h) && !isNaN(m)) return Math.max(0, h * 60 + m)
+      }
+      const justNumber = parseInt(raw.replace(/[^0-9]/g, ''), 10)
+      return Math.max(0, isNaN(justNumber) ? 0 : justNumber)
+    }
+
+    function formatMonthDay(isoDate) {
+      const month = Number(isoDate.slice(5, 7))
+      const day = Number(isoDate.slice(8, 10))
+      return `${month}/${day}`
+    }
+
     function getBiweeklyStart(offset = 0) {
       const today = new Date()
       const dayOfWeek = today.getDay()
       const monday = new Date(today)
       monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-      
-      // Find the start of the current 2-week period
+
       const startOfYear = new Date(today.getFullYear(), 0, 1)
       const weekNum = Math.floor((monday - startOfYear) / (7 * 24 * 60 * 60 * 1000))
       const periodWeek = weekNum % 2 === 0 ? weekNum : weekNum - 1
-      
+
       const periodStart = new Date(startOfYear)
       periodStart.setDate(startOfYear.getDate() + periodWeek * 7)
       while (periodStart.getDay() !== 1) periodStart.setDate(periodStart.getDate() + 1)
-      
-      // Apply offset (each offset = 2 weeks)
+
       periodStart.setDate(periodStart.getDate() + offset * 14)
-      
       return periodStart
     }
 
     function initializeWeeks() {
       const start = getBiweeklyStart(periodOffset)
       weeks = [{ days: [] }, { days: [] }]
-      
+
       for (let w = 0; w < 2; w++) {
         for (let d = 0; d < 7; d++) {
           const date = new Date(start)
           date.setDate(start.getDate() + w * 7 + d)
           const isWeekend = date.getDay() === 0 || date.getDay() === 6
-          
+
           weeks[w].days.push({
             date: formatDate(date),
             dayOfWeek: getDayName(date),
             clockIn: '',
             clockOut: '',
-            leaveType: 'none',
+            leaveType: isWeekend ? 'holiday' : 'none',
             breakMinutes: isWeekend ? 0 : 60,
-            isHoliday: false,
-            isWeekend
+            isHoliday: isWeekend,
+            isWeekend,
+            breakfast: false,
+            dinner: false,
+            otRequestMinutes: 120,
           })
         }
       }
-      
+
+      // Seed with the user-provided sample for week 1 weekdays.
+      SAMPLE_WEEK_DATA.forEach((sample, index) => {
+        const target = weeks[0]?.days[index]
+        if (!target) return
+        target.clockIn = sample.clockIn
+        target.clockOut = sample.clockOut
+        target.breakMinutes = sample.breakMinutes
+        target.leaveType = sample.leaveType
+        target.otRequestMinutes = sample.otRequestMinutes
+        target.isHoliday = sample.leaveType === 'holiday'
+      })
+
       saveToStorage()
     }
 
@@ -268,7 +366,6 @@
       render()
     }
 
-    // Calculate worked minutes for a day
     function calcDayMinutes(day) {
       if (day.isWeekend || day.isHoliday || day.leaveType === 'holiday') return 0
       if (day.leaveType === 'annual') return 480
@@ -285,23 +382,19 @@
       return Math.max(0, worked)
     }
 
-    // Calculate all stats
     function calculateAll() {
       const allDays = weeks.flatMap(w => w.days)
-      const today = formatDate(new Date())
-      
-      // Reduce required hours for holidays
-      const holidayCount = allDays.filter(d => 
+
+      const holidayCount = allDays.filter(d =>
         !d.isWeekend && (d.leaveType === 'holiday' || d.isHoliday)
       ).length
-      const totalRequired = Math.max(0, 4800 - holidayCount * 480) // 80h - 8h per holiday
-      
-      // Calculate worked minutes
+      const totalRequired = Math.max(0, 4800 - holidayCount * 480)
+
       let workedMinutes = 0
       allDays.forEach(day => {
         workedMinutes += calcDayMinutes(day)
       })
-      
+
       const remainingMinutes = Math.max(0, totalRequired - workedMinutes)
       const overtime = workedMinutes - totalRequired
       const progress = totalRequired > 0 ? Math.min(100, (workedMinutes / totalRequired) * 100) : 100
@@ -309,156 +402,152 @@
       return { workedMinutes, remainingMinutes, overtime, progress, totalRequired }
     }
 
-    // Calculate Friday leave time
     function calculateFridayLeave() {
       const allDays = weeks.flatMap(w => w.days)
       const today = formatDate(new Date())
-      
-      // Find last Friday
+
       const fridays = allDays.filter(d => d.dayOfWeek === '금' && !d.isHoliday && d.leaveType !== 'holiday')
       const friday = fridays[fridays.length - 1]
-      
-      if (!friday) return { message: '금요일이 없습니다', leaveTime: null }
-      
-      // Calculate holiday reduction
-      const holidayCount = allDays.filter(d => 
+
+      if (!friday) return { message: 'No Friday in this period', leaveTime: null }
+
+      const holidayCount = allDays.filter(d =>
         !d.isWeekend && (d.leaveType === 'holiday' || d.isHoliday)
       ).length
       const totalRequired = Math.max(0, 4800 - holidayCount * 480)
-      
-      // Calculate worked so far (excluding Friday)
+
       let workedBeforeFriday = 0
       allDays.forEach(day => {
         if (day.date !== friday.date) {
           workedBeforeFriday += calcDayMinutes(day)
         }
       })
-      
-      // Project future days (Mon-Thu before Friday that haven't been logged)
+
       const defaultLeaveParsed = parseTime(defaultLeaveTime)
       const defaultLeaveMinutes = defaultLeaveParsed ? defaultLeaveParsed.hours * 60 + defaultLeaveParsed.minutes : 17 * 60
-      
+
       allDays.forEach(day => {
         if (day.date > today && day.date < friday.date && !day.isWeekend && !day.isHoliday && day.leaveType === 'none') {
-          // Assume 9:00 arrival, default leave time, 60min break
           const projected = defaultLeaveMinutes - 9 * 60 - 60
           workedBeforeFriday += Math.max(0, projected)
         }
       })
-      
+
       const neededOnFriday = totalRequired - workedBeforeFriday
-      
+
       if (neededOnFriday <= 0) {
-        return { message: '이미 목표를 달성했습니다!', leaveTime: null, complete: true }
+        return { message: 'Already completed target', leaveTime: null, complete: true, neededOnFriday: 0 }
       }
-      
+
       const fridayIn = parseTime(friday.clockIn)
       if (!fridayIn) {
-        document.getElementById('fridayClockInSection').classList.remove('hidden')
-        return { message: `금요일에 ${formatMinutes(neededOnFriday)} 근무 필요`, leaveTime: null, needsClockIn: true }
+        const fridayClockInSectionEl = document.getElementById('fridayClockInSection')
+        if (fridayClockInSectionEl) fridayClockInSectionEl.classList.remove('hidden')
+        return { message: 'Enter Friday clock-in', leaveTime: null, needsClockIn: true, neededOnFriday }
       }
-      
-      document.getElementById('fridayClockInSection').classList.add('hidden')
-      
+
+      const fridayClockInSectionEl = document.getElementById('fridayClockInSection')
+      if (fridayClockInSectionEl) fridayClockInSectionEl.classList.add('hidden')
+
       const fridayStart = fridayIn.hours * 60 + fridayIn.minutes
       const fridayLeaveMinutes = fridayStart + neededOnFriday + (friday.breakMinutes || 60)
-      
+
       const leaveHours = Math.floor(fridayLeaveMinutes / 60)
       const leaveMins = fridayLeaveMinutes % 60
-      
+
       if (leaveHours >= 24) {
-        return { message: '금요일 안에 완료 불가', leaveTime: null }
+        return { message: 'Cannot finish by Friday', leaveTime: null, neededOnFriday }
       }
-      
-      return { 
-        message: `금요일 ${formatTime(leaveHours, leaveMins)} 퇴근 가능`,
-        leaveTime: formatTime(leaveHours, leaveMins)
+
+      return {
+        message: formatTime(leaveHours, leaveMins),
+        leaveTime: formatTime(leaveHours, leaveMins),
+        neededOnFriday
       }
     }
 
-    // Render everything
     function render() {
       const stats = calculateAll()
       const fridayResult = calculateFridayLeave()
-      
-      // Update summary cards
+
       document.getElementById('workedHours').textContent = formatMinutes(stats.workedMinutes)
       document.getElementById('remainingHours').textContent = formatMinutes(stats.remainingMinutes)
-      document.getElementById('fridayLeave').textContent = fridayResult.leaveTime || '--:--'
-      
+      document.getElementById('fridayLeave').textContent = fridayResult.leaveTime || '-'
+
       const overtimeEl = document.getElementById('overtime')
       overtimeEl.textContent = formatMinutes(stats.overtime)
-      overtimeEl.className = `text-2xl font-bold ${stats.overtime >= 0 ? 'text-success' : 'text-warning'}`
-      
-      // Update progress
+      overtimeEl.className = 'metric-value'
+      if (stats.overtime > 0) overtimeEl.classList.add('worked-accent')
+
       document.getElementById('progressBar').style.width = `${stats.progress}%`
-      document.getElementById('progressLabel').textContent = `${Math.round(stats.progress)}%`
-      document.getElementById('targetHours').textContent = `${Math.round(stats.totalRequired / 60)}h`
-      
-      // Update Friday estimation
-      document.getElementById('fridayMessage').textContent = fridayResult.message
-      
-      // Update period label
-      const start = getBiweeklyStart(periodOffset)
-      const end = new Date(start)
-      end.setDate(start.getDate() + 13)
-      document.getElementById('periodLabel').textContent = 
-        `${start.getMonth() + 1}/${start.getDate()} - ${end.getMonth() + 1}/${end.getDate()}`
-      
-      // Update tabs
-      document.getElementById('tab1').className = `flex-1 py-3 text-sm font-medium ${currentTab === 0 ? 'tab-active' : 'tab-inactive'}`
-      document.getElementById('tab2').className = `flex-1 py-3 text-sm font-medium ${currentTab === 1 ? 'tab-active' : 'tab-inactive'}`
-      
-      // Render table
+      document.getElementById('progressLabel').textContent = `${stats.progress.toFixed(1)}%`
+      document.getElementById('workedSub').textContent = `${formatMinutes(stats.workedMinutes)} worked`
+      document.getElementById('targetHours').textContent = `${formatMinutes(stats.totalRequired)} required`
+
+      document.getElementById('workedHoursSub').textContent = `${(stats.workedMinutes / 60).toFixed(1)}h total`
+      document.getElementById('remainingHoursSub').textContent = `${(stats.remainingMinutes / 60).toFixed(1)}h to go`
+      document.getElementById('overtimeSub').textContent = stats.overtime > 0 ? 'Over target' : 'No overtime yet'
+      const fridayMessageEl = document.getElementById('fridayMessage')
+      if (fridayMessageEl) fridayMessageEl.textContent = fridayResult.message
+      const remainingHoursForFridayEl = document.getElementById('remainingHoursForFriday')
+      if (remainingHoursForFridayEl) {
+        remainingHoursForFridayEl.textContent = formatMinutes(fridayResult.neededOnFriday || stats.remainingMinutes)
+      }
+
+      document.getElementById('tab1').className = `week-tab ${currentTab === 0 ? 'active' : ''}`
+      document.getElementById('tab2').className = `week-tab ${currentTab === 1 ? 'active' : ''}`
+
+      const weekStart = weeks[currentTab].days[0].date
+      const weekEnd = weeks[currentTab].days[6].date
+      document.getElementById('weekTableTitle').textContent =
+        `Week ${currentTab + 1} (${formatMonthDay(weekStart)} - ${formatMonthDay(weekEnd)})`
+
+      document.getElementById('tab1').textContent = `Week 1 (${formatMonthDay(weeks[0].days[0].date)} - ${formatMonthDay(weeks[0].days[6].date)})`
+      document.getElementById('tab2').textContent = `Week 2 (${formatMonthDay(weeks[1].days[0].date)} - ${formatMonthDay(weeks[1].days[6].date)})`
+
       renderTable()
     }
 
     function renderTable() {
       const tbody = document.getElementById('timeTableBody')
       const week = weeks[currentTab]
-      
+
       tbody.innerHTML = week.days.map((day, i) => {
         const worked = calcDayMinutes(day)
         const isWeekend = day.isWeekend
-        const rowClass = isWeekend ? 'bg-gray-50 text-gray-400' : ''
-        
+        const dayClass = isWeekend ? 'day-weekend' : 'muted'
+
         return `
-          <tr class="border-t border-gray-100 ${rowClass}">
-            <td class="px-3 py-2">
-              <span class="text-sm font-medium">${day.date.slice(5)}</span>
-              <span class="text-xs text-gray-400 ml-1">${day.dayOfWeek}</span>
-            </td>
-            <td class="px-3 py-2">
+          <tr>
+            <td class="col-date">${Number(day.date.slice(5, 7))}/${Number(day.date.slice(8, 10))}</td>
+            <td class="col-day ${dayClass}">${day.dayOfWeek}</td>
+            <td>
               <input type="text" value="${day.clockIn}" placeholder="${isWeekend ? '' : '09:00'}"
-                class="w-16 px-2 py-1 text-sm font-mono border border-gray-200 rounded text-center ${isWeekend ? 'bg-gray-100' : ''}"
-                ${isWeekend ? 'disabled' : ''}
+                class="time-input" ${isWeekend ? 'disabled' : ''}
                 onchange="updateDay(${currentTab}, ${i}, 'clockIn', this.value)">
             </td>
-            <td class="px-3 py-2">
+            <td>
               <input type="text" value="${day.clockOut}" placeholder="${isWeekend ? '' : '18:00'}"
-                class="w-16 px-2 py-1 text-sm font-mono border border-gray-200 rounded text-center ${isWeekend ? 'bg-gray-100' : ''}"
-                ${isWeekend ? 'disabled' : ''}
+                class="time-input" ${isWeekend ? 'disabled' : ''}
                 onchange="updateDay(${currentTab}, ${i}, 'clockOut', this.value)">
             </td>
-            <td class="px-3 py-2">
-              <select class="px-2 py-1 text-sm border border-gray-200 rounded ${isWeekend ? 'bg-gray-100' : ''}"
-                ${isWeekend ? 'disabled' : ''}
+            <td>
+              <select class="leave-select" ${isWeekend ? 'disabled' : ''}
                 onchange="updateDay(${currentTab}, ${i}, 'leaveType', this.value)">
-                <option value="none" ${day.leaveType === 'none' ? 'selected' : ''}>-</option>
-                <option value="annual" ${day.leaveType === 'annual' ? 'selected' : ''}>연차</option>
-                <option value="half" ${day.leaveType === 'half' ? 'selected' : ''}>반차</option>
-                <option value="quarter" ${day.leaveType === 'quarter' ? 'selected' : ''}>반반차</option>
-                <option value="holiday" ${day.leaveType === 'holiday' ? 'selected' : ''}>공휴일</option>
+                <option value="none" ${day.leaveType === 'none' ? 'selected' : ''}>Normal</option>
+                <option value="annual" ${day.leaveType === 'annual' ? 'selected' : ''}>Annual</option>
+                <option value="half" ${day.leaveType === 'half' ? 'selected' : ''}>Half</option>
+                <option value="quarter" ${day.leaveType === 'quarter' ? 'selected' : ''}>Quarter</option>
+                <option value="holiday" ${day.leaveType === 'holiday' ? 'selected' : ''}>Holiday</option>
               </select>
             </td>
-            <td class="px-3 py-2">
+            <td>
               <input type="number" value="${day.breakMinutes}" min="0" max="180" step="10"
-                class="w-14 px-2 py-1 text-sm font-mono border border-gray-200 rounded text-center ${isWeekend ? 'bg-gray-100' : ''}"
-                ${isWeekend ? 'disabled' : ''}
+                class="break-input" ${isWeekend ? 'disabled' : ''}
                 onchange="updateDay(${currentTab}, ${i}, 'breakMinutes', parseInt(this.value) || 0)">
             </td>
-            <td class="px-3 py-2 text-right">
-              <span class="text-sm font-medium ${worked > 480 ? 'text-primary' : ''}">${formatMinutes(worked)}</span>
+            <td class="col-worked ${worked > 480 ? 'worked-accent' : ''}">
+              ${worked ? formatMinutes(worked) : '-'}
             </td>
           </tr>
         `
@@ -470,14 +559,13 @@
         const parsed = parseTime(value)
         value = parsed ? formatTime(parsed.hours, parsed.minutes) : ''
       }
-      
+
       weeks[weekIndex].days[dayIndex][field] = value
-      
-      // Sync isHoliday when leaveType changes
+
       if (field === 'leaveType') {
         weeks[weekIndex].days[dayIndex].isHoliday = value === 'holiday'
       }
-      
+
       saveToStorage()
       render()
     }
@@ -486,7 +574,8 @@
       const parsed = parseTime(value)
       if (parsed) {
         defaultLeaveTime = formatTime(parsed.hours, parsed.minutes)
-        document.getElementById('defaultLeaveTime').value = defaultLeaveTime
+        const defaultLeaveTimeEl = document.getElementById('defaultLeaveTime')
+        if (defaultLeaveTimeEl) defaultLeaveTimeEl.value = defaultLeaveTime
         localStorage.setItem('workflex_defaultLeave', defaultLeaveTime)
         render()
       }
@@ -495,15 +584,15 @@
     function updateFridayClockIn(value) {
       const parsed = parseTime(value)
       if (!parsed) return
-      
+
       const formatted = formatTime(parsed.hours, parsed.minutes)
-      document.getElementById('fridayClockIn').value = formatted
-      
-      // Find and update Friday
+      const fridayClockInEl = document.getElementById('fridayClockIn')
+      if (fridayClockInEl) fridayClockInEl.value = formatted
+
       const allDays = weeks.flatMap((w, wi) => w.days.map((d, di) => ({ ...d, wi, di })))
       const fridays = allDays.filter(d => d.dayOfWeek === '금' && !d.isHoliday)
       const friday = fridays[fridays.length - 1]
-      
+
       if (friday) {
         weeks[friday.wi].days[friday.di].clockIn = formatted
         saveToStorage()
@@ -511,13 +600,26 @@
       }
     }
 
-    // Paste dialog
+    function resetAll() {
+      if (!window.confirm('모든 입력값을 초기화할까요?')) return
+      localStorage.removeItem('workflex_weeks')
+      localStorage.removeItem('workflex_offset')
+      localStorage.removeItem('workflex_defaultLeave')
+      periodOffset = 0
+      currentTab = 0
+      defaultLeaveTime = '17:00'
+      const defaultLeaveTimeEl = document.getElementById('defaultLeaveTime')
+      if (defaultLeaveTimeEl) defaultLeaveTimeEl.value = defaultLeaveTime
+      initializeWeeks()
+      render()
+    }
+
     function openPasteDialog() {
       document.getElementById('pasteDialog').classList.remove('hidden')
       document.getElementById('pasteDialog').classList.add('flex')
       document.getElementById('pasteInput').value = ''
       document.getElementById('parsePreview').classList.add('hidden')
-      
+
       document.getElementById('pasteInput').addEventListener('input', previewPaste)
     }
 
@@ -530,53 +632,51 @@
     function previewPaste() {
       const text = document.getElementById('pasteInput').value
       const lines = text.trim().split('\n').filter(l => l.trim())
-      
+
       if (lines.length === 0) {
         document.getElementById('parsePreview').classList.add('hidden')
         return
       }
-      
+
       const parsed = lines.map(line => {
         const parts = line.split(/\t|,|\s{2,}/)
         const dateMatch = parts[0]?.match(/\d{4}-\d{2}-\d{2}|\d{2}\/\d{2}/)
         const clockIn = parseTime(parts[1])
         const clockOut = parseTime(parts[2])
-        
+
         return {
           date: dateMatch ? dateMatch[0] : parts[0],
           clockIn: clockIn ? formatTime(clockIn.hours, clockIn.minutes) : '',
           clockOut: clockOut ? formatTime(clockOut.hours, clockOut.minutes) : ''
         }
       })
-      
-      document.getElementById('previewContent').innerHTML = parsed.map(p => 
+
+      document.getElementById('previewContent').innerHTML = parsed.map(p =>
         `<div class="flex gap-4 py-1 border-b border-gray-100">
           <span class="text-gray-600">${p.date}</span>
           <span class="font-mono">${p.clockIn || '-'}</span>
           <span class="font-mono">${p.clockOut || '-'}</span>
         </div>`
       ).join('')
-      
+
       document.getElementById('parsePreview').classList.remove('hidden')
     }
 
     function applyPasteData() {
       const text = document.getElementById('pasteInput').value
       const lines = text.trim().split('\n').filter(l => l.trim())
-      
+
       lines.forEach(line => {
         const parts = line.split(/\t|,|\s{2,}/)
         let dateStr = parts[0]?.trim()
-        
-        // Normalize date format
+
         if (dateStr?.match(/^\d{2}\/\d{2}$/)) {
           dateStr = `${new Date().getFullYear()}-${dateStr.replace('/', '-')}`
         }
-        
+
         const clockIn = parseTime(parts[1])
         const clockOut = parseTime(parts[2])
-        
-        // Find matching day
+
         weeks.forEach((week, wi) => {
           week.days.forEach((day, di) => {
             if (day.date === dateStr || day.date.endsWith(dateStr?.slice(-5))) {
@@ -586,13 +686,12 @@
           })
         })
       })
-      
+
       saveToStorage()
       closePasteDialog()
       render()
     }
 
-    // Storage
     function saveToStorage() {
       localStorage.setItem('workflex_weeks', JSON.stringify(weeks))
       localStorage.setItem('workflex_offset', periodOffset.toString())
@@ -602,16 +701,16 @@
       const saved = localStorage.getItem('workflex_weeks')
       const savedOffset = localStorage.getItem('workflex_offset')
       const savedLeave = localStorage.getItem('workflex_defaultLeave')
-      
+
       if (savedOffset) periodOffset = parseInt(savedOffset)
       if (savedLeave) {
         defaultLeaveTime = savedLeave
-        document.getElementById('defaultLeaveTime').value = savedLeave
+        const defaultLeaveTimeEl = document.getElementById('defaultLeaveTime')
+        if (defaultLeaveTimeEl) defaultLeaveTimeEl.value = savedLeave
       }
-      
+
       if (saved) {
         const parsed = JSON.parse(saved)
-        // Verify dates match current period
         const expectedStart = formatDate(getBiweeklyStart(periodOffset))
         if (parsed[0]?.days[0]?.date === expectedStart) {
           weeks = parsed
